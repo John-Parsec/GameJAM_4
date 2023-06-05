@@ -9,6 +9,7 @@ function Team:new(teamColor)
 
     self.discs = Team:createDiscs()
     self.count = 1
+    self.score = 0
 end
 
 function Team:update(dt)
@@ -19,7 +20,7 @@ function Team:update(dt)
         end
         self.discs[self.count].position.y = 800
     
-    elseif gameState == 2 then
+    elseif gameState == 3 then
         if not self.discs[self.count].played then
             self.discs[self.count].velocity = self.discs[self.count].velocity + self.discs[self.count].acceleration * dt
 
@@ -48,6 +49,13 @@ function Team:update(dt)
             self.count = self.count + 1
             self.discs[self.count].stoped = true
             gameState = 1
+
+            if actualTeam == 1 then
+                actualTeam = 2
+            elseif actualTeam == 2 then
+                actualTeam = 1
+                turn = turn + 1
+            end
         end
     end
 end
