@@ -3,8 +3,10 @@ Team = Classe:extend()
 function Team:new(teamColor)
     if teamColor == 1 then
         self.sprite = love.graphics.newImage('img/discRed.png')
+        self.teamNumber = 1
     elseif teamColor == 2 then
         self.sprite = love.graphics.newImage('img/discBlue.png')
+        self.teamNumber = 2
     end
 
     self.discs = Team:createDiscs()
@@ -32,38 +34,36 @@ function Team:update(dt)
         self.discs[self.count].position = self.discs[self.count].position + self.discs[self.count].velocity * dt
         self.discs[self.count].center = Vetor(self.discs[self.count].position.x + 7, self.discs[self.count].position.y + 7)
 
-        for i, disc in ipairs(self.discs) do
-            if i ~= self.count and collided(self.discs[self.count], disc) then
-                local direcao = (self.discs[self.count].position - disc.position):norm()
-                
-                local newVel1 = direcao * disc.velocity:getmag()
-                local newVel2 = -direcao * self.discs[self.count].velocity:getmag()
-                
-                disc.velocity = newVel1
-                self.discs[self.count].velocity = newVel2
-            end
-        end
-
         if self.discs[self.count].velocity:getmag() < 1 then
             self.discs[self.count].velocity = Vetor(0, 0)
-            self.count = self.count + 1
             self.discs[self.count].stoped = true
-            gameState = 1
-
+            self.count = self.count + 1
+            
             if actualTeam == 1 then
                 actualTeam = 2
             elseif actualTeam == 2 then
                 actualTeam = 1
                 turn = turn + 1
             end
+
+            gameState = 1
         end
     end
 end
 
 function Team:draw()
-    for i, disc in ipairs(self.discs) do
-        love.graphics.draw(self.sprite, disc.position.x, disc.position.y, 0)
+    if self.teamNumber == actualTeam then
+        for i, disc in ipairs(self.discs) do
+            love.graphics.draw(self.sprite, disc.position.x, disc.position.y, 0)
+        end
+    else
+        for i, disc in ipairs(self.discs) do
+            if disc.stoped == true then
+                love.graphics.draw(self.sprite, disc.position.x, disc.position.y, 0)
+            end
+        end
     end
+        
 end
 
 
@@ -87,7 +87,9 @@ function Team:createDiscs()
             acceleration = Vetor(0, 0),
             atrito = 0.1,
             played = false,
-            stoped = false
+            stoped = false,
+            counted = false,
+            score = 0
           }
         table.insert(discs, disc)
     end

@@ -41,6 +41,12 @@ function Display:draw()
         love.graphics.setColor(0, 0, 0)
         love.graphics.print(pontTeam2, x - fx - 17, 0, 0, 1, 1, 0)
         love.graphics.setColor(255, 255, 255)
+
+        tip = "Z: position\nX: lança"
+        local fx = font.getWidth(font, tip) / 2
+        love.graphics.setColor(0, 0, 0)
+        love.graphics.print(tip, x - fx - 17, 700, 0, 1, 1, 0)
+        love.graphics.setColor(255, 255, 255)
     end
 
     if gameState == 5 then

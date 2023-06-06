@@ -17,18 +17,17 @@ function Jogo:new()
     actualTeam = 1
     turn = 1
 
-    forca = 1000 -- |1000 - 6000
+    forca = 1250 -- |1000 - 6000
 
     winner = 'none'
 
     self.bar = love.graphics.newImage('img/bar.png')
     self.grid = anim8.newGrid(30 , 70, self.bar:getWidth(), self.bar:getHeight())
 
-    self.barAnimation = anim8.newAnimation(self.grid('1-5', 1), 0.1)
+    self.barAnimation = anim8.newAnimation(self.grid('1-5', 1), 0.6)
 end
 
 function Jogo:update(dt)
-    print(gameState)
     -- Pré-jogo
     if gameState == 0 then
        if love.keyboard.isDown('space') then
@@ -38,16 +37,25 @@ function Jogo:update(dt)
 
     -- Jogo
     if gameState ~= 0 then
-        for i, disc in ipairs(team[actualTeam].discs) do
-            for j, area in ipairs(areas) do
-                if disc.stoped and collided (disc, area) then
-                    score = score + (20 * j)
+        for x, t in ipairs(team) do 
+            for i, disc in ipairs(t.discs) do
+                if disc.stoped and not disc.counted then
+                    for j, area in ipairs(areas) do
+                        if collided (disc, area) then
+                            disc.score = disc.score + 20
+                        end
+                    end
+                    disc.counted = true
                 end
             end
+
+            local scr = 0
+            for i, disc in ipairs(t.discs) do
+                scr = scr + disc.score 
+            end
+            t.score = scr
         end
     end
-
-    print(gameState)
 
     if gameState == 1 then
         if love.keyboard.isDown('z') then
@@ -65,7 +73,7 @@ function Jogo:update(dt)
     for i, disc in ipairs(team[1].discs) do
         for j, disc2 in ipairs(team[2].discs) do
             if collided(disc2, disc) then
-                local direcao = (disc2.position - disc.position):norm()
+                local direcao = (disc.position - disc2.position):norm()
                 
                 local newVel1 = direcao * disc.velocity:getmag()
                 local newVel2 = -direcao * disc2.velocity:getmag()
@@ -76,8 +84,18 @@ function Jogo:update(dt)
         end
     end
 
+    for i, disc in ipairs(team[actualTeam].discs) do
+        if i ~= team[actualTeam].count and collided(team[actualTeam].discs[team[actualTeam].count], disc) then
+            local direcao = (disc.position - team[actualTeam].discs[team[actualTeam].count].position):norm()
+            local forcaRepulsao = direcao * 1
+            
+            disc.velocity = disc.velocity + forcaRepulsao
+            team[actualTeam].discs[team[actualTeam].count].velocity = team[actualTeam].discs[team[actualTeam].count].velocity - forcaRepulsao
+        end
+    end
+
     --Fim de jogo
-    if turn > 1 then
+    if turn > 5 then
         if team[1].score > team[2].score then
             winner = "Red"
         elseif team[2].score > team[1].score then
@@ -98,8 +116,8 @@ function Jogo:draw()
     display:draw()
 
     if gameState ~= 0 then
-        team[actualTeam]:draw()
-        --team[2]:draw()
+        team[1]:draw()
+        team[2]:draw()
     end
 
     if gameState == 2 then
@@ -112,7 +130,7 @@ end
 
 function Jogo:createAreas()
     local areas = {}
-    local radius = 81
+    local radius = 101
 
     for i = 1, 4 do
         local area = {
